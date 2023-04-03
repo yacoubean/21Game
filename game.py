@@ -1,4 +1,3 @@
-import sys
 from random import randrange
 
 
@@ -154,5 +153,4 @@ class MainGame:
 
 
 if __name__ == "__main__":
-    app = MainGame()
-    sys.exit()
+    MainGame()
