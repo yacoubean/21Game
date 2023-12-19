@@ -27,31 +27,39 @@ def begin_game(self):
     take_turn(self)
 
 
+def choose_difficulty():
+    print("What game difficulty do you want?\n")
+    print("(1) Easy")
+    print("(2) Medium")
+    print("(3) Hard")
+    return input("")
+
+
 def take_turn(self):
-    if self.first_player == 0: # computer is first player
-        if self.game_total > 17:
-            # computer is going to win, calculate winning num
+    if self.first_player == 0:  # computer is first player
+        if (self.game_total > 17) & (self.game_difficulty == 3):
+            # computer is going to win because we're in hard mode, calculate winning num
             comp_play = 21 - self.game_total
             print("The computer played {0} ".format(comp_play))
             self.game_total = 21
             print("Game total: {0}".format(self.game_total))
             self.computer_won = True
         else:
-            comp_play = comp_strat(self.game_total)
+            comp_play = comp_strategy(self.game_total, self.game_difficulty)
             print("The computer played {0} ".format(comp_play))
             self.game_total += comp_play
             print("Game total: {0}".format(self.game_total))
             player_play = input("Play a number: ")
             self.game_total = verify_num_played(self.game_total, player_play)
             print("Game total: {0}".format(self.game_total))
-    else: # player goes first
+    else:  # player goes first
         player_play = input("Play a number: ")
         self.game_total = verify_num_played(self.game_total, player_play)
         print("Game total: {0}".format(self.game_total))
         if self.game_total == 21:
             # player won, exit so game can end
             return
-        elif self.game_total > 17:
+        elif (self.game_total > 17) & (self.game_difficulty == 3):
             # computer is going to win, calculate winning num and end game
             comp_play = 21 - self.game_total
             print("The computer played {0} ".format(comp_play))
@@ -59,7 +67,7 @@ def take_turn(self):
             print("Game total: {0}".format(self.game_total))
             self.computer_won = True
         else:
-            comp_play = comp_strat(self.game_total)
+            comp_play = comp_strategy(self.game_total, self.game_difficulty)
             print("The computer played {0} ".format(comp_play))
             self.game_total += comp_play
             print("Game total: {0}".format(self.game_total))
@@ -86,7 +94,30 @@ def verify_num_played(game_total, num):
     return int(game_total)
 
 
-def comp_strat(game_total):
+def comp_strategy(game_total, game_difficulty):
+    comp_play = 0
+    if game_difficulty == 1:  # Easy difficulty, no strategy just randomly pick a number
+        comp_play = randrange(1,4)
+        if comp_play + game_total > 21:  # make sure the computer doesn't play over 21
+            comp_play = 21 - game_total
+    elif game_difficulty == 2:  # Medium difficulty
+        # randomly pick a luck factor between 1 and 2
+        luck_factor = randrange(1, 3)
+        if luck_factor == 1:
+            # if 1 we're going easy. just randomly pick number
+            comp_play = randrange(1, 4)
+            if comp_play + game_total > 21:  # make sure the computer doesn't play over 21
+                comp_play = 21 - game_total
+        else:
+            # for medium difficulty, 50% of the time use the hard strategy
+            comp_play = hard_comp_strategy(game_total)
+    else:  # Hard difficulty
+        comp_play = hard_comp_strategy(game_total)
+
+    return comp_play
+
+
+def hard_comp_strategy(game_total):
     comp_play = 0
     if 13 < game_total < 17:
         # if game_total is 17 the computer's next play will put the total close
@@ -98,7 +129,7 @@ def comp_strat(game_total):
         # land on 13 instead of 14
         comp_play = 13 - game_total
     elif 5 < game_total < 9:
-        # if game_total is 10, the other player can force a 14, so we want to
+        # if game_total is 10, the other player can force a 13, so we want to
         # land on 9 instead of 10
         comp_play = 9 - game_total
     elif 1 < game_total < 5:
@@ -137,10 +168,13 @@ class MainGame:
         super().__init__()
         self.game_total = 0
         self.first_player = 0
+        self.game_difficulty = 0
         self.computer_won = False
         self.quit_game = False
 
         explain_game()
+        self.game_difficulty = choose_difficulty()
+        self.game_difficulty = int(self.game_difficulty)
         begin_game(self)
 
         while self.game_total < 21:
